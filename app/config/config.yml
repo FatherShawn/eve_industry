@@ -53,6 +53,8 @@ doctrine:
         password: "%database_password%"
         charset:  UTF8
         unix_socket: "%unix_socket%"
+        types:
+          cachetime: AppBundle\Type\PhealCacheTimeType
 
         # if using pdo_sqlite as your database driver:
         #   1. add the path in parameters.yml

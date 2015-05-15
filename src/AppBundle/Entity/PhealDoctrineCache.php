@@ -52,7 +52,7 @@ class PhealDoctrineCache
     /**
      * @var \DateTime
      *
-     * @ORM\Column(name="cachedUntil", type="datetimetz")
+     * @ORM\Column(name="cachedUntil", type="cachetime")
      */
     private $cachedUntil;
 

@@ -65,8 +65,10 @@ class PhealCacheRepository extends EntityRepository implements Cache\CanCache {
     if (empty($result)) {
       return FALSE;
     }
-    $cache_expires = new \DateTime($result->getCachedUntil(), 'UTC');
-    $present = new \DateTime('now', 'UTC');
+    $utc = new \DateTimeZone('UTC');
+    $ce = $result->getCachedUntil();
+    $cache_expires = new \DateTime($result->getCachedUntil(), $utc);
+    $present = new \DateTime('now', $utc);
     if ($cache_expires > $present) {
       // cache TTL not exceeded.
       return $result->getXml();
@@ -103,12 +105,15 @@ class PhealCacheRepository extends EntityRepository implements Cache\CanCache {
       $cache_item = new PhealDoctrineCache();
       $manager->persist($cache_item);
     }  // update and save
+    $xml = new \SimpleXMLElement($xml);
+    $utc = new \DateTimeZone('UTC');
+    $cache_expires = new \DateTime($xml->cachedUntil->__toString, $utc);
     $cache_item->setUserId($userid);
     $cache_item->setScope($scope);
     $cache_item->setName($name);
     $cache_item->setArgs($concat_args);
-    $xml = new \SimpleXMLElement($xml);
     $cache_item->setXml($xml->asXML());
+    $cache_item->setCachedUntil($cache_expires);
     $manager->flush();
   }
 }
