@@ -65,9 +65,8 @@ class PhealCacheRepository extends EntityRepository implements Cache\CanCache {
     if (empty($result)) {
       return FALSE;
     }
+    $cache_expires = $result->getCachedUntil();
     $utc = new \DateTimeZone('UTC');
-    $ce = $result->getCachedUntil();
-    $cache_expires = new \DateTime($result->getCachedUntil(), $utc);
     $present = new \DateTime('now', $utc);
     if ($cache_expires > $present) {
       // cache TTL not exceeded.
@@ -80,7 +79,7 @@ class PhealCacheRepository extends EntityRepository implements Cache\CanCache {
   }
 
   /**
-   * Save XML from cache
+   * Save XML to cache
    *
    * @param int $userid
    * @param string $apikey

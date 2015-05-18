@@ -19,16 +19,20 @@ use Doctrine\DBAL\Types\ConversionException;
 class PhealCacheTimeType extends DateTimeType {
   static private $utc = null;
 
-  public function convertToDatabaseValue($value, AbstractPlatform $platform)
-  {
+  public function convertToDatabaseValue($value, AbstractPlatform $platform) {
     if ($value === null) {
       return null;
     }
-
-
-    return $value->format($platform->getDateTimeFormatString(),
-      (self::$utc) ? self::$utc : (self::$utc = new \DateTimeZone('UTC'))
-    );
+    if (empty(self::$utc)) {
+      self::$utc = new \DateTimeZone('UTC');
+    }
+    // Current behavior according to comments at php.net is that setting
+    // timezone with text name to create DateTimeZone object does not effect
+    // timestamp but let's not depend on that...
+    $timestamp = $value->getTimeStamp();
+    $value->setTimezone(self::$utc);
+    $value->setTimestamp($timestamp);
+    return $value->format($platform->getDateTimeFormatString());
   }
 
   public function convertToPHPValue($value, AbstractPlatform $platform)
@@ -36,12 +40,10 @@ class PhealCacheTimeType extends DateTimeType {
     if ($value === null) {
       return null;
     }
-
-    $val = \DateTime::createFromFormat(
-      $platform->getDateTimeFormatString(),
-      $value,
-      (self::$utc) ? self::$utc : (self::$utc = new \DateTimeZone('UTC'))
-    );
+    if (empty(self::$utc)) {
+      self::$utc = new \DateTimeZone('UTC');
+    }
+    $val = \DateTime::createFromFormat($platform->getDateTimeFormatString(), $value, self::$utc);
     if (!$val) {
       throw ConversionException::conversionFailed($value, $this->getName());
     }
